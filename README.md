@@ -66,6 +66,10 @@ The solution consists of the projects ``DLLInjectionDetector`` which serves as t
 - Implements the ``IInjectionHandler`` interface  
 - Monitors hook events, logs information to the console, and actively blocks DLL injection attempts  
 
+#### Other Notes  
+
+It is also worth mentioning that within the method ``::HandleBaseThreadInitThunk``, the method ``InjectionDetector::IsModuleAddress`` is called to determine whether the thread’s start address belongs to a loaded module. If this is not the case, it is highly likely that an external process has injected code at that address.
+
 ## Screenshot  
 
 ![Screenshot.PNG](./Images/Screenshot.PNG)  
