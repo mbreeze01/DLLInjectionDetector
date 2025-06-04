@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="HookEngine\HookEngine.cpp">
+      <Filter>HookEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="InjectionDetector\InjectionDetector.cpp">
+      <Filter>InjectionDetector</Filter>
+    </ClCompile>
+    <ClCompile Include="InjectionMonitor\InjectionMonitor.cpp">
+      <Filter>InjectionMonitor</Filter>
+    </ClCompile>
+    <ClCompile Include="InjectionGuard\InjectionGuard.cpp">
+      <Filter>InjectionGuard</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="HookEngine">
+      <UniqueIdentifier>{15e09da7-4b75-4244-a21f-2eb2004c5223}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="InjectionGuard">
+      <UniqueIdentifier>{384c459a-a642-41c1-b835-d91bce9149f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="InjectionMonitor">
+      <UniqueIdentifier>{7fa6377d-b626-47d9-9e19-efd6d857f6ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TypeDefs">
+      <UniqueIdentifier>{cfa69a22-a40b-4d8b-86aa-11ef435d3514}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="InjectionDetector">
+      <UniqueIdentifier>{7511a701-d49b-452b-a7ec-2229782f8813}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="HookEngine\HookEngine.h">
+      <Filter>HookEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="TypeDefs\TypeDefs.h">
+      <Filter>TypeDefs</Filter>
+    </ClInclude>
+    <ClInclude Include="InjectionDetector\InjectionDetector.h">
+      <Filter>InjectionDetector</Filter>
+    </ClInclude>
+    <ClInclude Include="InjectionDetector\IInjectionHandler.h">
+      <Filter>InjectionDetector</Filter>
+    </ClInclude>
+    <ClInclude Include="InjectionMonitor\InjectionMonitor.h">
+      <Filter>InjectionMonitor</Filter>
+    </ClInclude>
+    <ClInclude Include="InjectionGuard\InjectionGuard.h">
+      <Filter>InjectionGuard</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
