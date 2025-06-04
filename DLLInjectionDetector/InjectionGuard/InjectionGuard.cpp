@@ -32,7 +32,7 @@ namespace InjectionDetector
   {
     if (FileName != nullptr)
     {
-      auto moduleHandle = GetModuleHandleW(FileName);
+      auto moduleHandle = GetModuleHandleW(FileName); // Checking if the filename belongs to a module. When injected, it is already available using GetModuleHandleW at this point.
       if (moduleHandle != nullptr)
       {
         std::wcout << std::endl << "RtlGetFullPathName_U: Blocked attempt to inject " << FileName << std::endl;
