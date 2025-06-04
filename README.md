@@ -53,7 +53,11 @@ The solution consists of the projects ``DLLInjectionDetector`` which serves as t
 
 #### Class InjectionDetector  
 
-- Installs the mentioned hooks within the ``InjectionDetector::Initialze``  method
+- Installs the specified hooks, including trampolines, within the ``InjectionDetector::Initialize`` method.
+  - Hooks
+    - *LdrLoadDll* (Module: *ntdll.dll*)
+    - *BaseThreadInitThunk* (Module: *kernel32.dll*)
+    - *RtlGetFullPathName_U* (Module: *ntdll.dll*)
 - Forwards hook calls to implementations of the ``IInjectionHandler`` interface
 
 #### Class InjectionMonitor  
