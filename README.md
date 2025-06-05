@@ -51,7 +51,7 @@ The solution consists of the projects ``DLLInjectionDetector`` which serves as t
 
 ### Implementation Notes  
 
-#### Class InjectionDetector  
+#### Class ``InjectionDetector``  
 
 - Installs the specified hooks, including trampolines, within the ``InjectionDetector::Initialize`` method.
   - Hooks
@@ -60,12 +60,12 @@ The solution consists of the projects ``DLLInjectionDetector`` which serves as t
     - *RtlGetFullPathName_U* (Module: *ntdll.dll*)
 - Forwards hook calls to implementations of the ``IInjectionHandler`` interface
 
-#### Class InjectionMonitor  
+#### Class ``InjectionMonitor``  
 
 - Implements the ``IInjectionHandler`` interface
 - Solely monitors hook events and outputs information to the console.  
 
-#### Class InjectionGuard  
+#### Class ``InjectionGuard``  
 
 - Implements the ``IInjectionHandler`` interface  
 - Monitors hook events, logs information to the console, and actively blocks DLL injection attempts 
