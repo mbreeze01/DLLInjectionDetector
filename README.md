@@ -68,7 +68,9 @@ The solution consists of the projects ``DLLInjectionDetector`` which serves as t
 #### Class InjectionGuard  
 
 - Implements the ``IInjectionHandler`` interface  
-- Monitors hook events, logs information to the console, and actively blocks DLL injection attempts  
+- Monitors hook events, logs information to the console, and actively blocks DLL injection attempts 
+- In the ``InjectionGuard::HandleBaseThreadInitThunk`` method, I chose to set the _blockDllLoading flag, similar to the approach used in the InjectionMonitor implementation, to display the name of the blocked DLL later in ``HandleLdrLoadDll``. Of course, this implementation can be replaced with direct thread blocking, as demonstrated when handling a suspicious thread using:
+``InjectionDetector::Instance()->CallBaseThreadInitThunkStub(LdrReserved, (LPTHREAD_START_ROUTINE)Sleep, 0);``  
 
 #### Other Notes  
 
