@@ -7,7 +7,6 @@ namespace InjectionDetector
 {
   InjectionGuard::InjectionGuard()
   {
-    _blockDllLoading = false;
   }
 
   InjectionGuard::~InjectionGuard()
@@ -16,16 +15,9 @@ namespace InjectionDetector
 
   NTSTATUS InjectionGuard::HandleLdrLoadDll(PCWSTR DllPath, PULONG DllCharacteristics, PUNICODE_STRING DllName, PVOID* DllHandle)
   {
-    if (_blockDllLoading == false)
-    {
-      return InjectionDetector::Instance()->CallLdrLoadDllStub(DllPath, DllCharacteristics, DllName, DllHandle);
-    }
-    else
-    {
-      _blockDllLoading = false;
-      std::wcout << std::endl << "LdrLoadDll: Blocked attempt to inject " << DllName->Buffer << std::endl;
-      return -1;
-    }
+    // This hook is not required for InjectionGuard, as thread creation for DLL loading is already blocked in BaseThreadInitThunk,
+    // and DLL loading itself is handled in HandleRtlGetFullPathName_U.
+    return InjectionDetector::Instance()->CallLdrLoadDllStub(DllPath, DllCharacteristics, DllName, DllHandle);
   }
 
   ULONG __stdcall InjectionGuard::HandleRtlGetFullPathName_U(PWSTR FileName, ULONG BufferLength, PWSTR Buffer, PWSTR* FilePart)
@@ -37,7 +29,7 @@ namespace InjectionDetector
       {
         std::wcout << std::endl << "RtlGetFullPathName_U: Blocked attempt to inject " << FileName << std::endl;
         memset(Buffer, 0, BufferLength);
-        return InjectionDetector::Instance()->CallRtlGetFullPathName_UStub(NULL, BufferLength, Buffer, FilePart);;
+        return InjectionDetector::Instance()->CallRtlGetFullPathName_UStub(NULL, BufferLength, Buffer, FilePart);
       }
     }
     return InjectionDetector::Instance()->CallRtlGetFullPathName_UStub(FileName, BufferLength, Buffer, FilePart);
@@ -45,41 +37,49 @@ namespace InjectionDetector
 
   void __fastcall InjectionGuard::HandleBaseThreadInitThunk(IN DWORD LdrReserved, IN LPTHREAD_START_ROUTINE lpStartAddress, IN LPVOID lpParameter)
   {
+    bool threadBlocked = false;
     if ((DWORD)lpStartAddress == (DWORD)GetProcAddress(GetModuleHandle(L"kernel32.dll"), "LoadLibraryA"))
     {
-      _blockDllLoading = true;
-      std::wcout << std::endl << "BaseThreadInitThunk: Detected thread creation on LoadLibraryA" << std::endl;
+      threadBlocked = true;
+      std::wcout << std::endl << "BaseThreadInitThunk: Blocked thread creation on LoadLibraryA" << std::endl;
     }
     else if ((DWORD)lpStartAddress == (DWORD)GetProcAddress(GetModuleHandle(L"kernel32.dll"), "LoadLibraryW"))
     {
-      _blockDllLoading = true;
-      std::wcout << std::endl << "BaseThreadInitThunk: Detected thread creation on LoadLibraryW" << std::endl;
+      threadBlocked = true;
+      std::wcout << std::endl << "BaseThreadInitThunk: Blocked thread creation on LoadLibraryW" << std::endl;
     }
     else if (InjectionDetector::Instance()->IsLdrLoadDllOriginal((DWORD)lpStartAddress))
     {
-      _blockDllLoading = true;
-      std::wcout << std::endl << "BaseThreadInitThunk: Detected thread creation on LdrLoadDll" << std::endl;
+      threadBlocked = true;
+      std::wcout << std::endl << "BaseThreadInitThunk: Blocked thread creation on LdrLoadDll" << std::endl;
     }
     else if (InjectionDetector::Instance()->IsLdrLoadDllHook((DWORD)lpStartAddress))
     {
-      _blockDllLoading = true;
-      std::wcout << std::endl << "BaseThreadInitThunk: Detected thread creation on LdrLoadDllHook" << std::endl;
+      threadBlocked = true;
+      std::wcout << std::endl << "BaseThreadInitThunk: Blocked thread creation on LdrLoadDllHook" << std::endl;
     }
     else if (InjectionDetector::Instance()->IsLdrLoadDllStub((DWORD)lpStartAddress))
     {
-      _blockDllLoading = true;
-      std::wcout << std::endl << "BaseThreadInitThunk: Detected thread creation on LdrLoadDllStub" << std::endl;
+      threadBlocked = true;
+      std::wcout << std::endl << "BaseThreadInitThunk: Blocked thread creation on LdrLoadDllStub" << std::endl;
     }
     else
     {
       DWORD startAddress = (DWORD)lpStartAddress;
       if (!InjectionDetector::Instance()->IsModuleAddress(startAddress))
       {
+        threadBlocked = true;
         std::wcout << std::endl << "BaseThreadInitThunk: Blocked creation of suspicious thread" << std::endl;
-        InjectionDetector::Instance()->CallBaseThreadInitThunkStub(LdrReserved, (LPTHREAD_START_ROUTINE)Sleep, 0);
-        return;
       }
     }
-    InjectionDetector::Instance()->CallBaseThreadInitThunkStub(LdrReserved, lpStartAddress, lpParameter);
+
+    if (threadBlocked)
+    {
+      InjectionDetector::Instance()->CallBaseThreadInitThunkStub(LdrReserved, (LPTHREAD_START_ROUTINE)Sleep, 0);
+    }
+    else
+    {
+      InjectionDetector::Instance()->CallBaseThreadInitThunkStub(LdrReserved, lpStartAddress, lpParameter);
+    }
   }
 }
